@@ -1,0 +1,28 @@
+# Dossiers de dépendances
+/vendor/
+/node_modules/
+
+# Storage compilé et liens symboliques
+/public/storage
+/storage/*.key
+
+# Fichier d’environnement
+.env
+.env.*
+
+# Logs et caches
+/storage/logs/
+/storage/framework/cache/
+/storage/framework/sessions/
+/storage/framework/views/
+
+# Fichiers système et éditeur
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/
+
+# Macros NPM/Yarn
+npm-debug.log*
+yarn-error.log*
