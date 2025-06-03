@@ -4,23 +4,20 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateFollowersTable extends Migration
+return new class extends Migration
 {
-    public function up()
+    public function up(): void
     {
-        Schema::create('followers', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // The user being followed
-            $table->foreignId('follower_id')->constrained('users')->onDelete('cascade'); // The user who follows
+        Schema::create('follows', function (Blueprint $table) {
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('mentor_id')->constrained('users')->onDelete('cascade');
+            $table->primary(['user_id', 'mentor_id']);
             $table->timestamps();
-            
-            // Ensure user_id and follower_id are unique pairs
-            $table->unique(['user_id', 'follower_id']);
         });
     }
 
-    public function down()
+    public function down(): void
     {
-        Schema::dropIfExists('followers');
+        Schema::dropIfExists('follows');
     }
-}
+};

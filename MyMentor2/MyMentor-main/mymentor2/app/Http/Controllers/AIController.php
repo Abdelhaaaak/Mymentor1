@@ -11,7 +11,6 @@ class AIController extends Controller
      */
     public function find()
     {
-        // TODO : remplacer par votre logique
         return view('ai.find');
     }
 }

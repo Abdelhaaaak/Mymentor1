@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Message extends Model
 {
@@ -14,11 +14,13 @@ class Message extends Model
         'receiver_id',
         'session_id',
         'content',
-        'sent_at',
+        'sent_at'
     ];
- protected $casts = [
-        'sent_at' => 'datetime',
+
+    protected $casts = [
+        'sent_at' => 'datetime'
     ];
+
     public function sender()
     {
         return $this->belongsTo(User::class, 'sender_id');
@@ -31,6 +33,6 @@ class Message extends Model
 
     public function session()
     {
-        return $this->belongsTo(Session::class);
+        return $this->belongsTo(SessionMM::class);
     }
 }

@@ -12,7 +12,19 @@ use Carbon\Carbon;
 class ProfileController extends Controller
 {
     /**
-     * Affiche le formulaire d’édition du profil connecté.
+     * Validation rule for any field that is optional ("nullable")
+     * but must be a string if present. By centralizing this literal
+     * into a constant, future changes (e.g., adding max length) can
+     * be made in one place.
+     *
+     * @var string
+     */
+    protected const NULLABLE_STRING = 'nullable|string';
+
+    /**
+     * Display the form for editing the authenticated user’s profile.
+     *
+     * @return \Illuminate\View\View
      */
     public function edit()
     {
@@ -22,68 +34,93 @@ class ProfileController extends Controller
     }
 
     /**
-     * Met à jour les données du profil connecté.
+     * Update the authenticated user’s profile data.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function update(Request $request)
     {
         $user = Auth::user();
 
+        // Validate incoming request data. Note the use of self::NULLABLE_STRING
         $data = $request->validate([
             'name'          => 'required|string|max:255',
             'email'         => 'required|email|unique:users,email,' . $user->id,
-            'expertise'     => 'nullable|string|max:255',
-            'bio'           => 'nullable|string',
-            'language'      => 'nullable|string',
-            'level'         => 'nullable|string',
-            'style'         => 'nullable|string',
-            'skills'        => 'nullable|string',
+            'expertise'     => self::NULLABLE_STRING . '|max:255',
+            'bio'           => self::NULLABLE_STRING,
+            'language'      => self::NULLABLE_STRING,
+            'level'         => self::NULLABLE_STRING,
+            'style'         => self::NULLABLE_STRING,
+            'skills'        => self::NULLABLE_STRING,
             'profile_image' => 'nullable|image|max:2048',
         ]);
 
-        // upload image
+        // Handle profile image upload if present
         if ($request->hasFile('profile_image')) {
+            // Delete old image if it exists
             if ($user->profile_image) {
                 Storage::disk('public')->delete($user->profile_image);
             }
-            $data['profile_image'] = $request->file('profile_image')->store('profiles','public');
+            // Store new image and set its path in $data
+            $data['profile_image'] = $request
+                ->file('profile_image')
+                ->store('profiles', 'public');
         }
 
+        // Update user with validated data
         $user->update($data);
 
-        // sync compétences pivot
+        // Sync "skills" pivot table if skills were provided
         if (! empty($data['skills'])) {
-            $names = array_filter(array_map('trim', explode(',', $data['skills'])));
-            $existing = Skill::whereIn('name',$names)->pluck('name','id')->flip();
+            // Split comma-separated string into an array of names
+            $names = array_filter(
+                array_map('trim', explode(',', $data['skills']))
+            );
+
+            // Retrieve existing skill names → their IDs
+            $existing = Skill::whereIn('name', $names)
+                             ->pluck('name', 'id')
+                             ->flip();
+
+            // Determine which names are new
             $newNames = array_diff($names, $existing->values()->all());
 
+            // Collect IDs for existing skills
             $ids = $existing->keys()->all();
+
+            // For each new skill name, create it and add its ID
             foreach ($newNames as $name) {
-                $ids[] = Skill::create(['name'=>$name])->id;
+                $ids[] = Skill::create(['name' => $name])->id;
             }
 
+            // Sync the pivot table with the final list of skill IDs
             $user->skills()->sync($ids);
         }
 
-            return redirect()
+        // Redirect back to the user’s profile page with a success message
+        return redirect()
             ->route('profile.show', $user->id)
             ->with('success', 'Profil mis à jour avec succès.');
-
     }
 
     /**
-     * Supprime le profil (compte) du user.
+     * Delete (destroy) the authenticated user’s profile (account).
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy(Request $request)
     {
         $user = Auth::user();
         Auth::logout();
 
-        // supprimer image si existante
+        // Delete profile image if it exists
         if ($user->profile_image) {
             Storage::disk('public')->delete($user->profile_image);
         }
 
-        // Optionnel : cascade delete skills pivot, sessions, messages...
+        // Optionally cascade delete pivot (skills), sessions, messages…
         $user->delete();
 
         return redirect()->route('home')
@@ -91,51 +128,56 @@ class ProfileController extends Controller
     }
 
     /**
-     * Redirige vers /profile/{id} pour le user connecté.
+     * Redirect the authenticated user to their own public profile page.
+     *
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function showSelf()
     {
         return redirect()->route('profile.user.show', Auth::id());
     }
 
-public function show($id)
-{
-    // Récupère l’utilisateur…
-    $user = User::with('skills')->findOrFail($id);
+    /**
+     * Display the specified user’s public profile, including skills,
+     * upcoming sessions, feedbacks, and average rating (for mentors).
+     *
+     * @param  int  $id
+     * @return \Illuminate\View\View
+     */
+    public function show($id)
+    {
+        $user = User::with('skills')->findOrFail($id);
 
-    // Monte les tableaux skills + bio
-    $skills = $user->skills->pluck('name')->toArray();
-    $bio    = $user->bio;
+        // Convert the user’s skills to a simple array of names
+        $skills = $user->skills->pluck('name')->toArray();
+        $bio    = $user->bio;
 
-    // Si mentor, charge aussi sessions + feedbacks
-    if ($user->role === 'mentor') {
-        $upcomingSessions = $user->mentorSessions()
-            ->where('scheduled_at', '>=', now())
-            ->with('mentee')
-            ->orderBy('scheduled_at')
-            ->get();
+        if ($user->role === 'mentor') {
+            // Load upcoming sessions (future) and feedbacks for mentors
+            $upcomingSessions = $user->mentorSessions()
+                                     ->where('scheduled_at', '>=', now())
+                                     ->with('mentee')
+                                     ->orderBy('scheduled_at')
+                                     ->get();
 
-        $feedbacks = $user->feedbacks()
-            ->with('author')
-            ->get();
+            $feedbacks = $user->feedbacks()
+                              ->with('author')
+                              ->get();
 
-        $averageRating = round($feedbacks->avg('rating'), 1);
-    } else {
-        $upcomingSessions = collect();
-        $feedbacks        = collect();
-        $averageRating    = 0;
+            $averageRating = round($feedbacks->avg('rating'), 1);
+        } else {
+            $upcomingSessions = collect();
+            $feedbacks        = collect();
+            $averageRating    = 0;
+        }
+
+        return view('profile.show', [
+            'user'             => $user,
+            'skills'           => $skills,
+            'bio'              => $bio,
+            'upcomingSessions' => $upcomingSessions,
+            'feedbacks'        => $feedbacks,
+            'averageRating'    => $averageRating,
+        ]);
     }
-
-    // Passe exactement les mêmes clés que votre vue attend
-    return view('profile.show', [
-        'user'             => $user,
-        'skills'           => $skills,
-        'bio'              => $bio,
-        'upcomingSessions' => $upcomingSessions,
-        'feedbacks'        => $feedbacks,
-        'averageRating'    => $averageRating,
-    ]);
-}
-
-
 }

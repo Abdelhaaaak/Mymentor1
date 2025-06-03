@@ -1,0 +1,6 @@
+projectKey=MyMentor
+serverUrl=http://localhost:9000
+serverVersion=25.5.0.107428
+dashboardUrl=http://localhost:9000/dashboard?id=MyMentor
+ceTaskId=416722df-5487-46e4-a2c9-9b4d76209ab3
+ceTaskUrl=http://localhost:9000/api/ce/task?id=416722df-5487-46e4-a2c9-9b4d76209ab3

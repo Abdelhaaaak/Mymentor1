@@ -15,7 +15,7 @@ class SkillController extends Controller
     public function store(Request $request)
     {
         $skill = Skill::create($request->validate([
-            'name' => 'required|string|max:255'
+            'name' => 'required|string|max:255',
         ]));
 
         return response()->json($skill, 201);
@@ -29,3 +29,4 @@ class SkillController extends Controller
         return response()->json(null, 204);
     }
 }
+

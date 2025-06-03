@@ -22,7 +22,7 @@
         "@fullcalendar/core": "^6.1.17",
         "@fullcalendar/daygrid": "^6.1.17",
         "@fullcalendar/interaction": "^6.1.17",
-        "laravel-echo": "^2.1.0",
+        "laravel-echo": "^2.1.4",
         "pusher-js": "^8.4.0"
     }
 }

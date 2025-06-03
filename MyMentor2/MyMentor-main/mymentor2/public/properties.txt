@@ -1,0 +1,58 @@
+# ┌───────────────────────────────────────────────────────────────┐
+# │ 1) Identifiants du projet SonarQube                          │
+# └───────────────────────────────────────────────────────────────┘
+sonar.projectKey=MyMentor2
+sonar.projectName=MyMentor2
+sonar.projectVersion=1.0
+
+# ┌───────────────────────────────────────────────────────────────┐
+# │ 2) URL du serveur SonarQube                                   │
+# └───────────────────────────────────────────────────────────────┘
+sonar.host.url=http://localhost:9000
+
+# ┌───────────────────────────────────────────────────────────────┐
+# │ 3) Authentification (login ou token)                           │
+# └───────────────────────────────────────────────────────────────┘
+# Si vous avez généré un token dans l’interface SonarQube, mettez :
+# sonar.login=VOTRE_TOKEN_SONAR
+# sinon, par défaut (admin/admin) :
+sonar.login=admin
+sonar.password=admin
+
+# ┌───────────────────────────────────────────────────────────────┐
+# │ 4) Répertoires à analyser                                     │
+# └───────────────────────────────────────────────────────────────┘
+# On analyse le PHP (app, routes), les vues Blade (resources),
+# et le dossier public (JS/CSS/Vue, etc.) si besoin.
+sonar.sources=app,routes,resources,public
+
+# ┌───────────────────────────────────────────────────────────────┐
+# │ 5) Dossiers/Fichiers à exclure                                 │
+# └───────────────────────────────────────────────────────────────┘
+# - vendor/**       : dépendances Composer à ignorer
+# - node_modules/** : dépendances NPM/Yarn
+# - storage/**      : fichiers générés (logs, cache, sessions)
+# - bootstrap/cache/**
+# - public/build/** : assets compilés (Vite/Mix) à ignorer
+sonar.exclusions=vendor/**,node_modules/**,storage/**,bootstrap/cache/**,public/build/**
+
+# ┌───────────────────────────────────────────────────────────────┐
+# │ 6) Traiter les fichiers Blade comme du HTML/PHP                │
+# └───────────────────────────────────────────────────────────────┘
+# Permet à SonarQube d’appliquer des règles HTML/Blade sur *.blade.php
+sonar.inclusions=resources/views/**/*.blade.php
+sonar.blade.file.suffixes=blade.php
+
+# ┌───────────────────────────────────────────────────────────────┐
+# │ 7) Encodage des fichiers source                                │
+# └───────────────────────────────────────────────────────────────┘
+sonar.sourceEncoding=UTF-8
+
+# ┌───────────────────────────────────────────────────────────────┐
+# │ 8) (Optionnel) Rapport de couverture PHPUnit/JS                │
+# └───────────────────────────────────────────────────────────────┘
+# Si vous générez un rapport Clover pour PHP :
+# phpunit --coverage-clover=coverage.xml
+# puis décommentez la ligne ci‐dessous :
+# sonar.tests=tests
+# sonar.php.coverage.reportPaths=coverage.xml

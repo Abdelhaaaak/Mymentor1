@@ -11,9 +11,11 @@ class Skill extends Model
 
     protected $fillable = ['name'];
 
+    /**
+     * Utilisateurs ayant cette compétence.
+     */
     public function users()
-{
-    return $this->belongsToMany(User::class, 'profile_skills', 'skill_id', 'user_id');
-}
-
+    {
+        return $this->belongsToMany(User::class);
+    }
 }

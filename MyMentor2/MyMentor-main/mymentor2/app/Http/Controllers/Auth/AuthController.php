@@ -10,68 +10,81 @@ use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
-    // Registration function to show registration form
+    /**
+     * Règle de validation de base pour tout champ « required|string ».
+     *
+     * @var string
+     */
+    protected const BASIC_RULE = 'required|string';
+
+    /**
+     * Affiche le formulaire d’inscription générique.
+     */
     public function create()
     {
         return view('auth.register');
     }
 
-    // Handle user registration and log the user in
+    /**
+     * Enregistre un nouvel utilisateur (registration).
+     * Ici, on n’a pas fait la distinction Mentor / Mentee,
+     * mais vous pouvez dupliquer store() en storeMentor() / storeMentee().
+     */
     public function store(Request $request)
     {
-        // Validate the incoming request data
         $fields = $request->validate([
-            'name' => 'required|string',
-            'email' => 'required|string|unique:users,email',
-            'password' => 'required|string|confirmed',
+            'name'     => self::BASIC_RULE,
+            'email'    => self::BASIC_RULE . '|unique:users,email',
+            'password' => self::BASIC_RULE . '|confirmed',
         ]);
 
-        // Create the user in the database
         $user = User::create([
-            'name' => $fields['name'],
-            'email' => $fields['email'],
+            'name'     => $fields['name'],
+            'email'    => $fields['email'],
             'password' => bcrypt($fields['password']),
         ]);
 
-        // Automatically log the user in after registration
         Auth::login($user);
 
-        // Redirect the user to their profile or dashboard
-        return redirect()->route('profile.show');  // Or dashboard route if preferred
+        return redirect()->route('profile.show.self');
     }
 
-    // Show login form
+    /**
+     * Affiche le formulaire de connexion.
+     */
     public function loginForm()
     {
         return view('auth.login');
     }
 
-    // Handle login
+    /**
+     * Traite la connexion d’un utilisateur.
+     */
     public function login(Request $request)
     {
         $fields = $request->validate([
-            'email' => 'required|string',
-            'password' => 'required|string',
+            'email'    => self::BASIC_RULE,
+            'password' => self::BASIC_RULE,
         ]);
 
         $user = User::where('email', $fields['email'])->first();
 
-        if (!$user || !Hash::check($fields['password'], $user->password)) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
+        if (! $user || ! Hash::check($fields['password'], $user->password)) {
+            return back()->withErrors(['email' => 'Identifiants invalides.']);
         }
 
-        // Log in the user if credentials are correct
         Auth::login($user);
 
-        // Redirect the user to the profile or dashboard
-        return redirect()->route('profile.show');  // Or dashboard route
+        return redirect()->route('profile.show.self');
     }
 
-    // Logout function
+    /**
+     * Déconnecte l’utilisateur.
+     */
     public function logout(Request $request)
     {
-        Auth::logout(); // Log the user out
-        return redirect()->route('home');  // Redirect to the home page after logout
+        Auth::logout();
+
+        return redirect()->route('home');
     }
-    
 }

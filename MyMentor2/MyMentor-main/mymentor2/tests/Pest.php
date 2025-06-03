@@ -43,5 +43,5 @@ expect()->extend('toBeOne', function () {
 
 function something()
 {
-    // ..
+    // Intentionally left empty: placeholder for project-specific helper functions.
 }

@@ -1,3 +1,4 @@
+{{-- resources/views/recommend/results.blade.php --}}
 @extends('layouts.app')
 
 @section('title', 'Résultats de la recommandation')
@@ -17,16 +18,24 @@
       {{-- Profil --}}
       <div class="flex items-center space-x-4">
         @if($mentor->profile_image)
-          <img src="{{ asset('storage/'.$mentor->profile_image) }}"
-               class="h-16 w-16 rounded-full object-cover">
+          <img
+            src="{{ asset('storage/'.$mentor->profile_image) }}"
+            alt="Portrait de {{ $mentor->name }}"
+            class="h-16 w-16 rounded-full object-cover"
+          >
         @else
-          <div class="h-16 w-16 bg-gray-200 rounded-full flex items-center justify-center">
-            <span class="text-xl font-semibold">{{ strtoupper(substr($mentor->name,0,1)) }}</span>
+          <div class="h-16 w-16 bg-gray-200 rounded-full flex items-center justify-center" aria-hidden="true">
+            <span class="text-xl font-semibold">
+              {{ strtoupper(substr($mentor->name, 0, 1)) }}
+            </span>
           </div>
         @endif
+
         <div>
           <h2 class="text-lg font-semibold">{{ $mentor->name }}</h2>
-          <p class="text-sm">Score : <strong>{{ $mentor->score }}</strong></p>
+          <p class="text-sm">
+            Score : <strong>{{ $mentor->score }}</strong>
+          </p>
         </div>
       </div>
 
@@ -56,9 +65,21 @@
             <form action="{{ route('messages.store') }}" method="POST" class="mt-2">
               @csrf
               <input type="hidden" name="receiver_id" value="{{ $mentor->id }}">
-              <textarea name="content" rows="2"
-                        class="w-full border rounded p-2 mb-2"
-                        placeholder="Votre message…" required></textarea>
+
+              <div>
+                <label for="content-{{ $mentor->id }}" class="block font-medium text-gray-700">
+                  Votre message
+                </label>
+                <textarea
+                  id="content-{{ $mentor->id }}"
+                  name="content"
+                  rows="2"
+                  class="w-full border rounded p-2 mb-2"
+                  placeholder="Votre message…"
+                  required
+                >{{ old('content') }}</textarea>
+              </div>
+
               <button type="submit"
                       class="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600">
                 ✉️ Envoyer
@@ -69,12 +90,16 @@
       </div>
     </div>
   @empty
-    <p class="text-center text-red-600">Aucun mentor ne correspond à ces critères.</p>
+    <p class="text-center text-red-600">
+      Aucun mentor ne correspond à ces critères.
+    </p>
   @endforelse
 </div>
 @endsection
 
 @push('scripts')
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-<script> document.addEventListener('DOMContentLoaded', ()=> AOS.init({ once:true, duration:800 })); </script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => AOS.init({ once: true, duration: 800 }));
+</script>
 @endpush

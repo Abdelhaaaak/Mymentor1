@@ -2,28 +2,38 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\SessionMM;
-use App\Models\User;
 
 class Feedback extends Model
 {
-    protected $table = 'feedback'; // ou 'feedbacks' si vous avez nommé la table au pluriel
+    use HasFactory;
 
     protected $fillable = [
-        'mentor_session_id',
-        'author_id',
+        'mentor_id',
+        'mentee_id',
+        'session_id',
         'rating',
-        'comment',
+        'comment'
     ];
+
+    public function mentor()
+    {
+        return $this->belongsTo(User::class, 'mentor_id');
+    }
+
+    public function mentee()
+    {
+        return $this->belongsTo(User::class, 'mentee_id');
+    }
 
     public function session()
     {
-        return $this->belongsTo(SessionMM::class, 'mentor_session_id');
+        return $this->belongsTo(SessionMM::class, 'session_id');
     }
 
     public function author()
     {
-        return $this->belongsTo(User::class, 'author_id');
+        return $this->belongsTo(User::class, 'mentee_id');
     }
 }

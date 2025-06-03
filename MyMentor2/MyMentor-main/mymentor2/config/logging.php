@@ -5,6 +5,22 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
 use Monolog\Processor\PsrLogMessageProcessor;
 
+/*
+|--------------------------------------------------------------------------
+| Define a constant for the default log file path.
+|--------------------------------------------------------------------------
+|
+| By extracting 'logs/laravel.log' into a single named constant,
+| we adhere to the DRY principle. If this path needs to change
+| (e.g., to 'logs/app.log'), update only this constant.
+|
+| @see https://www.php.net/manual/en/function.define.php
+| :contentReference[oaicite:3]{index=3}
+*/
+if (! defined('DEFAULT_LOG_PATH')) {
+    define('DEFAULT_LOG_PATH', 'logs/laravel.log');
+}
+
 return [
 
     /*
@@ -14,7 +30,7 @@ return [
     |
     | This option defines the default log channel that is utilized to write
     | messages to your logs. The value provided here should match one of
-    | the channels present in the list of "channels" configured below.
+    | the channels present in the "channels" configured below.
     |
     */
 
@@ -33,7 +49,7 @@ return [
 
     'deprecations' => [
         'channel' => env('LOG_DEPRECATIONS_CHANNEL', 'null'),
-        'trace' => env('LOG_DEPRECATIONS_TRACE', false),
+        'trace'   => env('LOG_DEPRECATIONS_TRACE', false),
     ],
 
     /*
@@ -46,85 +62,103 @@ return [
     | of powerful log handlers and formatters that you're free to use.
     |
     | Available drivers: "single", "daily", "slack", "syslog",
-    |                    "errorlog", "monolog", "custom", "stack"
+    |                  "errorlog", "monolog", "custom", "stack"
     |
     */
 
     'channels' => [
 
         'stack' => [
-            'driver' => 'stack',
-            'channels' => explode(',', env('LOG_STACK', 'single')),
+            'driver'            => 'stack',
+            'channels'          => explode(',', env('LOG_STACK', 'single')),
             'ignore_exceptions' => false,
         ],
 
         'single' => [
-            'driver' => 'single',
-            'path' => storage_path('logs/laravel.log'),
-            'level' => env('LOG_LEVEL', 'debug'),
+            'driver'               => 'single',
+            /*
+             |--------------------------------------------------------------
+             | Use DEFAULT_LOG_PATH instead of the literal 'logs/laravel.log'.
+             | If the log path needs to change, update the constant above.
+             |--------------------------------------------------------------
+             */
+            'path'                 => storage_path(DEFAULT_LOG_PATH),
+            'level'                => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
         ],
 
         'daily' => [
-            'driver' => 'daily',
-            'path' => storage_path('logs/laravel.log'),
-            'level' => env('LOG_LEVEL', 'debug'),
-            'days' => env('LOG_DAILY_DAYS', 14),
+            'driver'               => 'daily',
+            /*
+             |--------------------------------------------------------------
+             | Again, use DEFAULT_LOG_PATH so that Laravel will append dates
+             | (e.g., 'laravel-2024-01-01.log') automatically.
+             |--------------------------------------------------------------
+             */
+            'path'                 => storage_path(DEFAULT_LOG_PATH),
+            'level'                => env('LOG_LEVEL', 'debug'),
+            'days'                 => env('LOG_DAILY_DAYS', 14),
             'replace_placeholders' => true,
         ],
 
         'slack' => [
-            'driver' => 'slack',
-            'url' => env('LOG_SLACK_WEBHOOK_URL'),
+            'driver'   => 'slack',
+            'url'      => env('LOG_SLACK_WEBHOOK_URL'),
             'username' => env('LOG_SLACK_USERNAME', 'Laravel Log'),
-            'emoji' => env('LOG_SLACK_EMOJI', ':boom:'),
-            'level' => env('LOG_LEVEL', 'critical'),
+            'emoji'    => env('LOG_SLACK_EMOJI', ':boom:'),
+            'level'    => env('LOG_LEVEL', 'critical'),
             'replace_placeholders' => true,
         ],
 
         'papertrail' => [
-            'driver' => 'monolog',
-            'level' => env('LOG_LEVEL', 'debug'),
-            'handler' => env('LOG_PAPERTRAIL_HANDLER', SyslogUdpHandler::class),
+            'driver'      => 'monolog',
+            'level'       => env('LOG_LEVEL', 'debug'),
+            'handler'     => env('LOG_PAPERTRAIL_HANDLER', SyslogUdpHandler::class),
             'handler_with' => [
-                'host' => env('PAPERTRAIL_URL'),
-                'port' => env('PAPERTRAIL_PORT'),
-                'connectionString' => 'tls://'.env('PAPERTRAIL_URL').':'.env('PAPERTRAIL_PORT'),
+                'host'             => env('PAPERTRAIL_URL'),
+                'port'             => env('PAPERTRAIL_PORT'),
+                'connectionString' => 'tls://' . env('PAPERTRAIL_URL') . ':' . env('PAPERTRAIL_PORT'),
             ],
-            'processors' => [PsrLogMessageProcessor::class],
+            'processors'  => [PsrLogMessageProcessor::class],
         ],
 
         'stderr' => [
-            'driver' => 'monolog',
-            'level' => env('LOG_LEVEL', 'debug'),
-            'handler' => StreamHandler::class,
+            'driver'    => 'monolog',
+            'level'     => env('LOG_LEVEL', 'debug'),
+            'handler'   => StreamHandler::class,
             'handler_with' => [
                 'stream' => 'php://stderr',
             ],
-            'formatter' => env('LOG_STDERR_FORMATTER'),
+            'formatter'  => env('LOG_STDERR_FORMATTER'),
             'processors' => [PsrLogMessageProcessor::class],
         ],
 
         'syslog' => [
             'driver' => 'syslog',
-            'level' => env('LOG_LEVEL', 'debug'),
+            'level'  => env('LOG_LEVEL', 'debug'),
             'facility' => env('LOG_SYSLOG_FACILITY', LOG_USER),
             'replace_placeholders' => true,
         ],
 
         'errorlog' => [
-            'driver' => 'errorlog',
-            'level' => env('LOG_LEVEL', 'debug'),
+            'driver'               => 'errorlog',
+            'level'                => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
         ],
 
         'null' => [
-            'driver' => 'monolog',
+            'driver'  => 'monolog',
             'handler' => NullHandler::class,
         ],
 
         'emergency' => [
-            'path' => storage_path('logs/laravel.log'),
+            /*
+             |--------------------------------------------------------------
+             | Use DEFAULT_LOG_PATH here as well for emergency logs. This
+             | ensures consistency if the log file location changes.
+             |--------------------------------------------------------------
+             */
+            'path' => storage_path(DEFAULT_LOG_PATH),
         ],
 
     ],

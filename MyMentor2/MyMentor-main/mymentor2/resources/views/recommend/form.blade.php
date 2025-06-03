@@ -1,72 +1,108 @@
+{{-- resources/views/recommend/form.blade.php --}}
 @extends('layouts.app')
 
-@section('title', 'Trouver mon mentor')
-
 @section('content')
-<div class="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow">
-  <h1 class="text-2xl font-bold mb-6">🎯 Trouvez votre mentor idéal</h1>
+<h2 class="text-2xl font-bold mb-4">🎯 Trouvez votre mentor idéal</h2>
 
-  <form action="{{ route('recommend.submit') }}" method="POST" class="space-y-5">
-    @csrf
+<form action="{{ route('recommend.submit') }}" method="POST" class="space-y-5">
+  @csrf
 
-    {{-- Objectifs --}}
-    <div>
-      <label class="block font-medium">Vos objectifs</label>
-      <textarea name="goals" rows="4"
-                class="w-full border rounded p-2">@old('goals')</textarea>
+  {{-- Objectifs (Goals) --}}
+  <div>
+    <x-input-label for="goals" :value="__('Vos objectifs')" />
+    <textarea
+      id="goals"
+      name="goals"
+      rows="4"
+      class="w-full border rounded p-2"
+    >{{ old('goals') }}</textarea>
+    @error('goals')
+      <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+    @enderror
+  </div>
+
+  {{-- Compétences souhaitées (Skills) --}}
+  <div>
+    <x-input-label for="skills" :value="__('Compétences souhaitées')" />
+    <div id="skills" class="grid grid-cols-2 md:grid-cols-3 gap-2">
+      @foreach($skills as $skill)
+        <label class="inline-flex items-center">
+          <input
+            type="checkbox"
+            name="skills[]"
+            value="{{ $skill->name }}"
+            class="form-checkbox"
+            {{ in_array($skill->name, old('skills', [])) ? 'checked' : '' }}
+          />
+          <span class="ml-2">{{ $skill->name }}</span>
+        </label>
+      @endforeach
     </div>
+    @error('skills')
+      <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+    @enderror
+  </div>
 
-    {{-- Compétences --}}
-    <div>
-      <label class="block font-medium mb-2">Compétences souhaitées</label>
-      <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
-        @foreach($skills as $skill)
-          <label class="inline-flex items-center">
-            <input type="checkbox" name="skills[]" value="{{ $skill->name }}"
-                   class="form-checkbox" 
-                   {{ in_array($skill->name, old('skills', [])) ? 'checked' : '' }}>
-            <span class="ml-2">{{ $skill->name }}</span>
-          </label>
-        @endforeach
-      </div>
-    </div>
+  {{-- Langue préférée (Language) --}}
+  <div>
+    <x-input-label for="language" :value="__('Langue préférée')" />
+    <select
+      id="language"
+      name="language"
+      class="w-full border rounded p-2"
+    >
+      <option value="">-- Choisir --</option>
+      <option value="Français" {{ old('language') == 'Français' ? 'selected' : '' }}>Français</option>
+      <option value="Anglais" {{ old('language') == 'Anglais' ? 'selected' : '' }}>Anglais</option>
+      <option value="Arabe" {{ old('language') == 'Arabe' ? 'selected' : '' }}>Arabe</option>
+    </select>
+    @error('language')
+      <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+    @enderror
+  </div>
 
-    {{-- Langue --}}
-    <div>
-      <label class="block font-medium">Langue préférée</label>
-      <select name="language" class="w-full border rounded p-2">
-        <option value="">-- Choisir --</option>
-        <option value="Français" {{ old('language')=='Français'?'selected':'' }}>Français</option>
-        <option value="Anglais"   {{ old('language')=='Anglais'?'selected':'' }}>Anglais</option>
-        <option value="Arabe"     {{ old('language')=='Arabe'?'selected':'' }}>Arabe</option>
-      </select>
-    </div>
+  {{-- Niveau actuel (Level) --}}
+  <div>
+    <x-input-label for="level" :value="__('Niveau actuel')" />
+    <select
+      id="level"
+      name="level"
+      class="w-full border rounded p-2"
+    >
+      <option value="">-- Sélectionner --</option>
+      <option value="Débutant" {{ old('level') == 'Débutant' ? 'selected' : '' }}>Débutant</option>
+      <option value="Intermédiaire" {{ old('level') == 'Intermédiaire' ? 'selected' : '' }}>Intermédiaire</option>
+      <option value="Avancé" {{ old('level') == 'Avancé' ? 'selected' : '' }}>Avancé</option>
+    </select>
+    @error('level')
+      <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+    @enderror
+  </div>
 
-    {{-- Niveau --}}
-    <div>
-      <label class="block font-medium">Niveau actuel</label>
-      <select name="level" class="w-full border rounded p-2">
-        <option value="">-- Sélectionner --</option>
-        <option value="Débutant"      {{ old('level')=='Débutant'?'selected':'' }}>Débutant</option>
-        <option value="Intermédiaire" {{ old('level')=='Intermédiaire'?'selected':'' }}>Intermédiaire</option>
-        <option value="Avancé"        {{ old('level')=='Avancé'?'selected':'' }}>Avancé</option>
-      </select>
-    </div>
+  {{-- Style de mentorat (Style) --}}
+  <div>
+    <x-input-label for="style" :value="__('Style de mentorat')" />
+    <input
+      id="style"
+      name="style"
+      type="text"
+      value="{{ old('style') }}"
+      class="w-full border rounded p-2"
+      placeholder="Ex : Coaching, Q&A…"
+    />
+    @error('style')
+      <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+    @enderror
+  </div>
 
-    {{-- Style --}}
-    <div>
-      <label class="block font-medium">Style de mentorat</label>
-      <input type="text" name="style" value="{{ old('style') }}"
-             class="w-full border rounded p-2" placeholder="Ex : Coaching, Q&A…">
-    </div>
-
-    {{-- Bouton --}}
-    <div class="text-center">
-      <button type="submit"
-              class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-        🔍 Rechercher
-      </button>
-    </div>
-  </form>
-</div>
+  {{-- Bouton de soumission --}}
+  <div class="text-center">
+    <button
+      type="submit"
+      class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+    >
+      🔍 Rechercher
+    </button>
+  </div>
+</form>
 @endsection

@@ -10,16 +10,20 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up()
-{
-    Schema::table('users', function (Blueprint $table) {
-        $table->string('expertise')->nullable(); // Add expertise column for mentors
-    });
-}
+    {
+        Schema::table('users', function (Blueprint $table) {
+            $table->string('expertise')->nullable(); // Add expertise column for mentors
+        });
+    }
 
-public function down()
-{
-    Schema::table('users', function (Blueprint $table) {
-        $table->dropColumn('expertise'); // Drop expertise column
-    });
-}
+    /**
+     * Reverse the migrations.
+     */
+    public function down()
+    {
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn('expertise'); // Drop expertise column
+        });
+    }
 };
+

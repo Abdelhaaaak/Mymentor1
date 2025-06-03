@@ -8,24 +8,63 @@
     @csrf
 
     <div class="mb-3">
-      <label>Intérêts</label>
-      <input type="text" name="interests" value="{{ old('interests') }}" class="form-control" required>
+      <label for="interests">Intérêts</label>
+      <input
+        id="interests"
+        type="text"
+        name="interests"
+        value="{{ old('interests') }}"
+        class="form-control"
+        required
+      >
     </div>
+
     <div class="mb-3">
-      <label>Points forts</label>
-      <input type="text" name="strengths" value="{{ old('strengths') }}" class="form-control" required>
+      <label for="strengths">Points forts</label>
+      <input
+        id="strengths"
+        type="text"
+        name="strengths"
+        value="{{ old('strengths') }}"
+        class="form-control"
+        required
+      >
     </div>
+
     <div class="mb-3">
-      <label>Objectifs</label>
-      <input type="text" name="goals" value="{{ old('goals') }}" class="form-control" required>
+      <label for="goals">Objectifs</label>
+      <input
+        id="goals"
+        type="text"
+        name="goals"
+        value="{{ old('goals') }}"
+        class="form-control"
+        required
+      >
     </div>
+
     <div class="mb-3">
-      <label>Préférences d'apprentissage</label>
-      <input type="text" name="learning" value="{{ old('learning') }}" class="form-control" required>
+      <label for="learning">Préférences d'apprentissage</label>
+      <input
+        id="learning"
+        type="text"
+        name="learning"
+        value="{{ old('learning') }}"
+        class="form-control"
+        required
+      >
     </div>
+
     <div class="mb-3">
-      <label>Disponibilités (h/semaine)</label>
-      <input type="number" name="availability" value="{{ old('availability') }}" class="form-control" required>
+      <label for="availability">Disponibilités (h/semaine)</label>
+      <input
+        id="availability"
+        type="number"
+        name="availability"
+        value="{{ old('availability') }}"
+        class="form-control"
+        required
+      >
     </div>
 
     <button type="submit" class="btn btn-primary">Suggérer</button>

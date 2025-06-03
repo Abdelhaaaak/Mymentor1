@@ -12,7 +12,7 @@ return new class extends Migration
             // Identifiant unique par UUID pour coller au comportement de Laravel
             $table->uuid('id')->primary();
 
-            // Le type de notification (class)  
+            // Le type de notification (class)
             $table->string('type');
 
             // Morph to notifiable (User, autre modèle, etc.)

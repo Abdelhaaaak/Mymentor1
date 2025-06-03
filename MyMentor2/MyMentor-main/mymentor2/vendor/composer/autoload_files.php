@@ -40,6 +40,7 @@ return array(
     '61ba3e92ef91a7a0f1cc260ebd9290e4' => $vendorDir . '/openai-php/client/src/OpenAI.php',
     'f83ed111c2f97a0449abf067f157f418' => $vendorDir . '/pestphp/pest/src/Functions.php',
     '7d2876738dc0328edeb8a103c76cd8e7' => $vendorDir . '/pestphp/pest/src/Pest.php',
+    '9b38cf48e83f5d8f60375221cd213eee' => $vendorDir . '/phpstan/phpstan/bootstrap.php',
     '801c31d8ed748cfa537fa45402288c95' => $vendorDir . '/psy/psysh/src/functions.php',
     'c72349b1fe8d0deeedd3a52e8aa814d8' => $vendorDir . '/mockery/mockery/library/helpers.php',
     'ce9671a430e4846b44e1c68c7611f9f5' => $vendorDir . '/mockery/mockery/library/Mockery.php',

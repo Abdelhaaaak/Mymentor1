@@ -2,15 +2,22 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class ProfileSkill extends Model
+class ProfileSkill extends Pivot
 {
-    use HasFactory;
-
+    /**
+     * Nom explicite de la table
+     *
+     * @var string
+     */
     protected $table = 'profile_skill';
 
+    /**
+     * Colonnes autorisées pour le « mass assignment »
+     *
+     * @var array<int,string>
+     */
     protected $fillable = [
         'profile_id',
         'skill_id',
