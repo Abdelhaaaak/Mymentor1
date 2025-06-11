@@ -51,7 +51,7 @@
       {{-- Desktop links --}}
       <div class="hidden md:flex items-center space-x-8">
         <a href="{{ route('profile.index') }}"
-           class="text-gray-700 hover:text-indigo-600 transition">Our Mentors</a>
+           class="text-gray-700 hover:text-indigo-600 transition">Nos Mentors</a>
     
 
       {{-- Call-to-action --}}

@@ -11,14 +11,12 @@ use Illuminate\Http\Request;
 class AuthController extends Controller
 {
     /**
-     * Règle de validation de base pour tout champ « required|string ».
-     *
-     * @var string
+     * Common validation rule for required string fields.
      */
     protected const BASIC_RULE = 'required|string';
 
     /**
-     * Affiche le formulaire d’inscription générique.
+     * Show the general registration form.
      */
     public function create()
     {
@@ -26,9 +24,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Enregistre un nouvel utilisateur (registration).
-     * Ici, on n’a pas fait la distinction Mentor / Mentee,
-     * mais vous pouvez dupliquer store() en storeMentor() / storeMentee().
+     * Handle general registration.
      */
     public function store(Request $request)
     {
@@ -42,6 +38,7 @@ class AuthController extends Controller
             'name'     => $fields['name'],
             'email'    => $fields['email'],
             'password' => bcrypt($fields['password']),
+            'role'     => 'user',
         ]);
 
         Auth::login($user);
@@ -50,7 +47,79 @@ class AuthController extends Controller
     }
 
     /**
-     * Affiche le formulaire de connexion.
+     * Show the mentee registration form.
+     */
+    public function showMentee()
+    {
+        return view('auth.register-mentee');
+    }
+
+    /**
+     * Store a newly registered mentee.
+     */
+    public function storeMentee(Request $request)
+    {
+        $fields = $request->validate([
+            'name'     => self::BASIC_RULE,
+            'email'    => self::BASIC_RULE . '|unique:users,email',
+            'password' => self::BASIC_RULE . '|confirmed',
+        ]);
+
+        $user = User::create([
+            'name'     => $fields['name'],
+            'email'    => $fields['email'],
+            'password' => bcrypt($fields['password']),
+            'role'     => 'mentee',
+        ]);
+
+        Auth::login($user);
+
+        return redirect()->route('profile.show.self');
+    }
+
+    /**
+     * Show the mentor registration form.
+     */
+    public function showMentor()
+    {
+        return view('auth.register-mentor');
+    }
+
+    /**
+     * Store a newly registered mentor with extended profile data.
+     */
+    public function storeMentor(Request $request)
+    {
+        $fields = $request->validate([
+            'name'                  => self::BASIC_RULE,
+            'email'                 => self::BASIC_RULE . '|unique:users,email',
+            'password'              => self::BASIC_RULE . '|confirmed',
+            'expertise'             => self::BASIC_RULE,
+            'bio'                   => self::BASIC_RULE,
+            'language'              => self::BASIC_RULE,
+            'level'                 => self::BASIC_RULE,
+            'style'                 => 'nullable|string',
+        ]);
+
+        $user = User::create([
+            'name'       => $fields['name'],
+            'email'      => $fields['email'],
+            'password'   => bcrypt($fields['password']),
+            'role'       => 'mentor',
+            'expertise'  => $fields['expertise'],
+            'bio'        => $fields['bio'],
+            'language'   => $fields['language'],
+            'level'      => $fields['level'],
+            'style'      => $fields['style'] ?? null,
+        ]);
+
+        Auth::login($user);
+
+        return redirect()->route('profile.show.self');
+    }
+
+    /**
+     * Show login form.
      */
     public function loginForm()
     {
@@ -58,7 +127,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Traite la connexion d’un utilisateur.
+     * Handle user login.
      */
     public function login(Request $request)
     {
@@ -70,7 +139,7 @@ class AuthController extends Controller
         $user = User::where('email', $fields['email'])->first();
 
         if (! $user || ! Hash::check($fields['password'], $user->password)) {
-            return back()->withErrors(['email' => 'Identifiants invalides.']);
+            return back()->withErrors(['email' => 'Invalid credentials.']);
         }
 
         Auth::login($user);
@@ -79,7 +148,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Déconnecte l’utilisateur.
+     * Handle logout.
      */
     public function logout(Request $request)
     {

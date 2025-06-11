@@ -14,7 +14,7 @@ class DomainSuggestionService
     /**
      * DomainSuggestionService constructor.
      *
-     * @throws CohereConfigurationException  Si la configuration (clé, point d’entrée ou modèle) est manquante.
+     * @throws CohereConfigurationException
      */
     public function __construct()
     {
@@ -33,39 +33,29 @@ class DomainSuggestionService
     /**
      * Suggère des secteurs d’activité via l’API Cohere Chat v2.
      *
-     * @param  array<string,mixed>  $answers  Les réponses de l’utilisateur :
-     *     [
-     *       'passions'       => string,
-     *       'taches_faciles' => string,
-     *       'flow_sujets'    => string,
-     *       'environnement'  => string,
-     *       'valeurs'        => string,
-     *       'strengths'      => string,
-     *       'objectifs_ct'   => string,
-     *       'objectifs_lt'   => string,
-     *       'learning'       => string,
-     *       'availability'   => string,
-     *     ]
+     * @param  array<string,mixed>  $answers
+     * @return array<int,string>  Suggestions en français
      *
-     * @return array<int,string>  Tableau contenant 5 suggestions de secteurs.
-     *
-     * @throws \Illuminate\Http\Client\RequestException  Si l’appel HTTP échoue (codes 4xx/5xx).
+     * @throws \Illuminate\Http\Client\RequestException
      */
     public function suggest(array $answers): array
     {
-        // 1) Construction du prompt formaté
+        // Construction du prompt avec instruction linguistique claire
         $prompt = sprintf(
-            "En tant que coach de carrière virtuel, propose 5 secteurs d'activité adaptés à une personne avec :\n" .
+            "Tu es un conseiller d’orientation virtuel.\n" .
+            "À partir des informations suivantes, propose une liste de 5 secteurs professionnels pertinents.\n" .
+            "Les réponses doivent être en français clair et professionnel, sous forme de liste avec un tiret par ligne.\n" .
             "- Passions : %s\n" .
             "- Tâches faciles : %s\n" .
             "- Sujets en état de flux : %s\n" .
-            "- Environnement idéal : %s\n" .
+            "- Environnement préféré : %s\n" .
             "- Valeurs personnelles : %s\n" .
-            "- Compétences maîtrisées : %s\n" .
-            "- Objectifs court terme : %s\n" .
-            "- Objectifs long terme : %s\n" .
-            "- Envie d'apprendre : %s\n" .
-            "- Disponibilité (h/semaine) : %s\n",
+            "- Compétences clés : %s\n" .
+            "- Objectifs à court terme : %s\n" .
+            "- Objectifs à long terme : %s\n" .
+            "- Sujets à apprendre : %s\n" .
+            "- Temps disponible par semaine : %s heures\n\n" .
+            "Réponds uniquement avec une liste de 5 secteurs professionnels adaptés, en français, sans introduction ni conclusion.",
             $answers['passions']       ?? '',
             $answers['taches_faciles'] ?? '',
             $answers['flow_sujets']    ?? '',
@@ -78,30 +68,28 @@ class DomainSuggestionService
             $answers['availability']   ?? ''
         );
 
-        // 2) Envoi de la requête HTTP POST à l’API Cohere
+        // Requête POST à l'API Cohere
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . $this->apiKey,
-            'Content-Type'  => 'application/json'
+            'Content-Type'  => 'application/json',
         ])->post($this->apiUrl, [
             'model'       => $this->model,
             'messages'    => [
-                [ 'role' => 'user', 'content' => $prompt ]
+                ['role' => 'user', 'content' => $prompt]
             ],
             'max_tokens'  => 300,
             'temperature' => 0.7,
         ]);
 
-        // Lance une exception si le code HTTP renvoyé est 4xx ou 5xx
         $response->throw();
 
-        // 3) Récupération du texte brut dans la réponse JSON
+        // Extraction du texte brut de la réponse
         $text = $response->json('message.content.0.text', '');
 
-        // 4) Découpage des lignes, suppression des lignes vides, suppression de tout symbole “- ”,
-        //    puis transformation en tableau indexé (0..4).
+        // Nettoyage et conversion en tableau
         return collect(explode("\n", $text))
             ->filter(fn (string $line) => trim($line) !== '')
-            ->map(fn (string $line) => trim($line, "- "))
+            ->map(fn (string $line) => trim($line, "- \t\n\r\0\x0B"))
             ->values()
             ->toArray();
     }

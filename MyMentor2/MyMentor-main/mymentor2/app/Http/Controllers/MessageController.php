@@ -2,38 +2,60 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Message;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class MessageController extends Controller
 {
     /**
-     * Affiche la liste de tous les messages reçus et envoyés.
+     * Affiche la liste des contacts et la conversation avec un utilisateur sélectionné.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
 
-        $received = $user->receivedMessages()->with('sender')
-                          ->latest()->get();
-        $sent     = $user->sentMessages()->with('receiver')
-                          ->latest()->get();
+        // Récupérer tous les utilisateurs sauf l'utilisateur connecté
+        $contacts = User::where('id', '!=', $user->id)->get();
 
-        return view('messages.index', compact('received', 'sent'));
+        // Récupérer l'utilisateur sélectionné s’il existe
+        $selectedUserId = $request->get('user');
+        $selectedUser = $selectedUserId ? User::find($selectedUserId) : null;
+
+        // Messages échangés avec l'utilisateur sélectionné
+        $messages = collect(); // collection vide par défaut
+        if ($selectedUser) {
+            $messages = Message::where(function ($query) use ($user, $selectedUser) {
+                    $query->where('sender_id', $user->id)
+                          ->where('receiver_id', $selectedUser->id);
+                })
+                ->orWhere(function ($query) use ($user, $selectedUser) {
+                    $query->where('sender_id', $selectedUser->id)
+                          ->where('receiver_id', $user->id);
+                })
+                ->orderBy('sent_at')
+                ->get();
+        }
+
+        return view('messages.index', [
+            'contacts'     => $contacts,
+            'selectedUser' => $selectedUser,
+            'messages'     => $messages,
+            'queryKey'     => 'user',
+        ]);
     }
 
     /**
-     * Affiche le formulaire d’envoi de message.
+     * Affiche le formulaire d’envoi de message (optionnel).
      */
     public function create()
     {
-        // Vous pouvez passer la liste des mentors consultables, etc.
         return view('messages.create');
     }
 
     /**
-     * Stocke un nouveau message.
+     * Enregistre un nouveau message.
      */
     public function store(Request $request)
     {
@@ -53,11 +75,10 @@ class MessageController extends Controller
     }
 
     /**
-     * Supprime un message.
+     * Supprime un message (si l'utilisateur est autorisé).
      */
     public function destroy(Message $message)
     {
-        // Vérifier si l’utilisateur peut vraiment supprimer le message
         $this->authorize('delete', $message);
 
         $message->delete();

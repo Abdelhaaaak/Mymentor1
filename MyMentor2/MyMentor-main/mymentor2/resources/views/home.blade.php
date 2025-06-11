@@ -54,7 +54,7 @@
   </section>
 
   {{-- Les 3 étapes --}}
-  <section class="bg-gray-50 py-20">
+  <section class=" py-20">
     <div class="container mx-auto px-6 text-center">
       <h2 class="text-3xl font-bold mb-12" data-aos="fade-up">Comment ça marche en 3 étapes</h2>
       <div class="grid md:grid-cols-3 gap-8">
@@ -111,7 +111,7 @@
   </section>
 
   {{-- FAQ --}}
-  <section class="bg-gray-50 py-20">
+  <section class=" rounded bg-gray-50 py-20">
     <div class="container mx-auto px-6 max-w-2xl">
       <h2 class="text-3xl font-bold text-center mb-8" data-aos="fade-up">Questions fréquentes</h2>
       @foreach([
